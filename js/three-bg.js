@@ -28,10 +28,10 @@ function initThreeBackground() {
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
     const starMat = new THREE.PointsMaterial({
-        color: lt ? 0x4b5563 : 0xffffff,
-        size: 0.04,
+        color: lt ? 0x1e293b : 0xffffff,
+        size: lt ? 0.06 : 0.04,
         transparent: true,
-        opacity: lt ? 0.5 : 0.7,
+        opacity: lt ? 0.85 : 0.7,
         sizeAttenuation: true
     });
     const stars = new THREE.Points(starGeo, starMat);
@@ -48,10 +48,10 @@ function initThreeBackground() {
     }
     twinkleGeo.setAttribute('position', new THREE.BufferAttribute(twinklePos, 3));
     const twinkleMat = new THREE.PointsMaterial({
-        color: lt ? 0x7c3aed : 0x00f0ff,
-        size: 0.06,
+        color: lt ? 0x0e7490 : 0x00f0ff,
+        size: lt ? 0.08 : 0.06,
         transparent: true,
-        opacity: 0.4,
+        opacity: lt ? 0.6 : 0.4,
         sizeAttenuation: true
     });
     const twinkleStars = new THREE.Points(twinkleGeo, twinkleMat);
@@ -159,9 +159,9 @@ function initThreeBackground() {
         nGeo.setAttribute('position', new THREE.BufferAttribute(nPos, 3));
         const nMat = new THREE.PointsMaterial({
             color: nebulaColors[n],
-            size: 0.15,
+            size: lt ? 0.25 : 0.15,
             transparent: true,
-            opacity: lt ? 0.04 : 0.03,
+            opacity: lt ? 0.12 : 0.03,
             sizeAttenuation: true
         });
         const nebula = new THREE.Points(nGeo, nMat);
@@ -263,9 +263,9 @@ function initThreeBackground() {
             s.position.y -= s.userData.speed * 0.4;
             // Fade in then out
             if (progress < 0.2) {
-                s.userData.mat.opacity = progress * 5 * (lt ? 0.4 : 0.6);
+                s.userData.mat.opacity = progress * 5 * (lt ? 0.7 : 0.6);
             } else {
-                s.userData.mat.opacity = (1 - progress) * (lt ? 0.4 : 0.6);
+                s.userData.mat.opacity = (1 - progress) * (lt ? 0.7 : 0.6);
             }
             if (progress >= 1) {
                 s.userData.active = false;
@@ -273,9 +273,9 @@ function initThreeBackground() {
             }
         });
 
-        // Mouse parallax
-        camera.position.x += (mouseX * 0.8 - camera.position.x) * 0.015;
-        camera.position.y += (-mouseY * 0.5 - camera.position.y) * 0.015;
+        // Mouse parallax — strong movement for visible hover effect
+        camera.position.x += (mouseX * 2.5 - camera.position.x) * 0.03;
+        camera.position.y += (-mouseY * 1.5 - camera.position.y) * 0.03;
         camera.lookAt(0, 0, -5);
 
         renderer.render(scene, camera);
@@ -295,11 +295,14 @@ function initThreeBackground() {
         const pc = l ? planetColors.light : planetColors.dark;
         const nc = l ? [0x0e7490, 0x7c3aed, 0xdb2777] : [0x00f0ff, 0x8b5cf6, 0xec4899];
 
-        starMat.color.setHex(l ? 0x4b5563 : 0xffffff);
-        starMat.opacity = l ? 0.5 : 0.7;
+        starMat.color.setHex(l ? 0x1e293b : 0xffffff);
+        starMat.size = l ? 0.06 : 0.04;
+        starMat.opacity = l ? 0.85 : 0.7;
         starMat.needsUpdate = true;
 
-        twinkleMat.color.setHex(l ? 0x7c3aed : 0x00f0ff);
+        twinkleMat.color.setHex(l ? 0x0e7490 : 0x00f0ff);
+        twinkleMat.size = l ? 0.08 : 0.06;
+        twinkleMat.opacity = l ? 0.6 : 0.4;
         twinkleMat.needsUpdate = true;
 
         planets.forEach((p, i) => {
@@ -318,7 +321,8 @@ function initThreeBackground() {
 
         nebulae.forEach((n, i) => {
             n.mat.color.setHex(nc[i % nc.length]);
-            n.mat.opacity = l ? 0.04 : 0.03;
+            n.mat.size = l ? 0.25 : 0.15;
+            n.mat.opacity = l ? 0.12 : 0.03;
             n.mat.needsUpdate = true;
         });
 
