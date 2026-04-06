@@ -13,30 +13,29 @@ function initThreeBackground() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Floating geometric shapes — 2.5x bigger in light mode
+    // Floating geometric shapes
     const lt = isLight();
-    const s = lt ? 2.5 : 1;
     const geometries = [
-        new THREE.IcosahedronGeometry(0.5 * s, 0),
-        new THREE.OctahedronGeometry(0.4 * s, 0),
-        new THREE.TetrahedronGeometry(0.4 * s, 0),
-        new THREE.TorusGeometry(0.3 * s, 0.1 * s, 8, 16),
-        new THREE.BoxGeometry(0.4 * s, 0.4 * s, 0.4 * s),
-        new THREE.ConeGeometry(0.3 * s, 0.5 * s, 6),
+        new THREE.IcosahedronGeometry(0.5, 0),
+        new THREE.OctahedronGeometry(0.4, 0),
+        new THREE.TetrahedronGeometry(0.4, 0),
+        new THREE.TorusGeometry(0.3, 0.1, 8, 16),
+        new THREE.BoxGeometry(0.4, 0.4, 0.4),
+        new THREE.ConeGeometry(0.3, 0.5, 6),
     ];
 
     const material = new THREE.MeshBasicMaterial({
-        color: lt ? 0x1e293b : 0x00f0ff,
+        color: lt ? 0x0e7490 : 0x00f0ff,
         wireframe: true,
         transparent: true,
-        opacity: lt ? 0.9 : 0.08
+        opacity: 0.08
     });
 
     const material2 = new THREE.MeshBasicMaterial({
-        color: lt ? 0x312e81 : 0x8b5cf6,
+        color: lt ? 0x7c3aed : 0x8b5cf6,
         wireframe: true,
         transparent: true,
-        opacity: lt ? 0.7 : 0.06
+        opacity: 0.06
     });
 
     const meshes = [];
@@ -45,9 +44,9 @@ function initThreeBackground() {
         const mat = i % 2 === 0 ? material : material2;
         const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(
-            (Math.random() - 0.5) * 16,
-            (Math.random() - 0.5) * 12,
-            (Math.random() - 0.5) * 6 - 3
+            (Math.random() - 0.5) * 20,
+            (Math.random() - 0.5) * 15,
+            (Math.random() - 0.5) * 10 - 5
         );
         mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
         mesh.userData = {
@@ -60,22 +59,22 @@ function initThreeBackground() {
         meshes.push(mesh);
     }
 
-    // Particle system — more and bigger in light mode
-    const particleCount = lt ? 400 : 200;
+    // Particle system
+    const particleCount = 200;
     const particleGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount * 3; i += 3) {
-        positions[i] = (Math.random() - 0.5) * 25;
-        positions[i + 1] = (Math.random() - 0.5) * 18;
-        positions[i + 2] = (Math.random() - 0.5) * 10 - 3;
+        positions[i] = (Math.random() - 0.5) * 30;
+        positions[i + 1] = (Math.random() - 0.5) * 20;
+        positions[i + 2] = (Math.random() - 0.5) * 15 - 5;
     }
     particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
     const particleMat = new THREE.PointsMaterial({
-        color: lt ? 0x1e293b : 0x00f0ff,
-        size: lt ? 0.15 : 0.02,
+        color: lt ? 0x0e7490 : 0x00f0ff,
+        size: 0.02,
         transparent: true,
-        opacity: lt ? 1.0 : 0.4
+        opacity: 0.4
     });
 
     const particles = new THREE.Points(particleGeo, particleMat);
@@ -120,18 +119,14 @@ function initThreeBackground() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Theme change observer — update colors/opacity live when toggling
+    // Theme change observer — swap colors on toggle
     const observer = new MutationObserver(() => {
         const l = isLight();
-        material.color.setHex(l ? 0x1e293b : 0x00f0ff);
-        material.opacity = l ? 0.9 : 0.08;
+        material.color.setHex(l ? 0x0e7490 : 0x00f0ff);
         material.needsUpdate = true;
-        material2.color.setHex(l ? 0x312e81 : 0x8b5cf6);
-        material2.opacity = l ? 0.7 : 0.06;
+        material2.color.setHex(l ? 0x7c3aed : 0x8b5cf6);
         material2.needsUpdate = true;
-        particleMat.color.setHex(l ? 0x1e293b : 0x00f0ff);
-        particleMat.size = l ? 0.15 : 0.02;
-        particleMat.opacity = l ? 1.0 : 0.4;
+        particleMat.color.setHex(l ? 0x0e7490 : 0x00f0ff);
         particleMat.needsUpdate = true;
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
