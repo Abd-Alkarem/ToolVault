@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolVault – Community Tool Rental & Sharing</title>
+    <meta name="description"
+        content="ToolVault is a community-based platform where neighbors share and rent home tools. Save money, reduce waste, and build community trust.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Leaflet.js (OpenStreetMap) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- 3D Background Canvas -->
+    <canvas id="three-canvas"></canvas>
+
+    <!-- Particle Overlay -->
+    <div id="particles"></div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="navbar">
+        <div class="nav-container">
+            <a href="#/" class="nav-logo" id="nav-logo">
+                <div class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect x="2" y="2" width="28" height="28" rx="6" stroke="url(#logoGrad)" stroke-width="2.5" />
+                        <path d="M10 22V12L16 8L22 12V22" stroke="url(#logoGrad)" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M10 18H22" stroke="url(#logoGrad)" stroke-width="2" stroke-linecap="round" />
+                        <circle cx="16" cy="14" r="2" fill="url(#logoGrad)" />
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                                <stop stop-color="#00f0ff" />
+                                <stop offset="1" stop-color="#8b5cf6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="logo-text">Tool<span class="logo-accent">Vault</span></span>
+            </a>
+
+            <div class="nav-links" id="nav-links">
+                <!-- Dynamic nav links injected by JS -->
+            </div>
+
+            <div class="nav-actions" id="nav-actions">
+                <!-- Dynamic actions injected by JS -->
+            </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-content" id="mobile-menu-content">
+            <!-- Dynamic mobile nav -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="app" class="app-container">
+        <!-- Pages rendered here by router -->
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="modal-overlay" style="display:none;">
+        <div class="modal-container" id="modal-container"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/store.js"></script>
+    <script src="js/components.js"></script>
+    <script src="js/pages.js"></script>
+    <script src="js/pages2.js"></script>
+    <script src="js/three-bg.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
