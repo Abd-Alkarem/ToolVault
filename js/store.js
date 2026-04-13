@@ -60,8 +60,9 @@ const Store = {
     // ---- Computed User Stats ----
     getUserRating(userId) {
         const reviews = this.getReviewsForUser(userId);
-        if (reviews.length === 0) return 0;
-        return Math.round(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length * 10) / 10;
+        const rated = reviews.filter(r => r.sellerRating || r.rating);
+        if (rated.length === 0) return 0;
+        return Math.round(rated.reduce((s, r) => s + (r.sellerRating || r.rating), 0) / rated.length * 10) / 10;
     },
     getUserEarnings(userId) {
         return this.getBookingsByOwner(userId).filter(b => b.status === 'returned' || b.status === 'active').reduce((s, b) => s + (b.totalPrice || 0), 0);
@@ -115,8 +116,9 @@ const Store = {
     // Compute tool rating from real reviews
     getToolRating(toolId) {
         const reviews = this.getReviewsForTool(toolId);
-        if (reviews.length === 0) return 0;
-        return Math.round(reviews.reduce((s, r) => s + r.rating, 0) / reviews.length * 10) / 10;
+        const rated = reviews.filter(r => r.toolRating || r.rating);
+        if (rated.length === 0) return 0;
+        return Math.round(rated.reduce((s, r) => s + (r.toolRating || r.rating), 0) / rated.length * 10) / 10;
     },
 
     // Calculate price with discounts
@@ -205,13 +207,19 @@ const Store = {
     _updateRatings(r) {
         if (r.toolId) {
             const toolReviews = this.getReviewsForTool(r.toolId);
-            const avg = toolReviews.reduce((s, rv) => s + rv.rating, 0) / toolReviews.length;
-            this.updateTool(r.toolId, { rating: Math.round(avg * 10) / 10, reviewCount: toolReviews.length });
+            const rated = toolReviews.filter(rv => rv.toolRating || rv.rating);
+            if (rated.length > 0) {
+                const avg = rated.reduce((s, rv) => s + (rv.toolRating || rv.rating), 0) / rated.length;
+                this.updateTool(r.toolId, { rating: Math.round(avg * 10) / 10, reviewCount: rated.length });
+            }
         }
         if (r.revieweeId) {
             const userReviews = this.getReviewsForUser(r.revieweeId);
-            const avg = userReviews.reduce((s, rv) => s + rv.rating, 0) / userReviews.length;
-            this.updateUser(r.revieweeId, { rating: Math.round(avg * 10) / 10, reviewCount: userReviews.length });
+            const rated = userReviews.filter(rv => rv.sellerRating || rv.rating);
+            if (rated.length > 0) {
+                const avg = rated.reduce((s, rv) => s + (rv.sellerRating || rv.rating), 0) / rated.length;
+                this.updateUser(r.revieweeId, { rating: Math.round(avg * 10) / 10, reviewCount: rated.length });
+            }
         }
     },
 
@@ -345,13 +353,14 @@ const Store = {
 
     // ---- Seed Data ----
     seed() {
-        if (this.get('tv_seeded_v5')) return;
+        if (this.get('tv_seeded_v6')) return;
         // Clear old data
         Object.values(this.KEYS).forEach(k => localStorage.removeItem(k));
         localStorage.removeItem('tv_seeded');
         localStorage.removeItem('tv_seeded_v2');
         localStorage.removeItem('tv_seeded_v3');
         localStorage.removeItem('tv_seeded_v4');
+        localStorage.removeItem('tv_seeded_v5');
 
         const toolImages = [
             'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
@@ -386,19 +395,19 @@ const Store = {
             { id: 'bk6', toolId: 'tool9', renterId: 'user5', ownerId: 'user1', startDate: '2026-04-01', endDate: '2026-04-03', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 12, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true }
         ];
 
-        // Seed reviews (renter reviews tool & owner)
+        // Seed reviews (renter reviews tool & owner — with separate product + seller ratings)
         const reviews = [
-            { id: 'rv1', bookingId: 'bk1', toolId: 'tool1', reviewerId: 'user3', revieweeId: 'user1', rating: 5, text: 'Excellent drill! Mike had it fully charged and ready to go. Made my shelf project so much easier. Will rent again!', createdAt: Date.now() - 86400000 * 38 },
-            { id: 'rv2', bookingId: 'bk2', toolId: 'tool1', reviewerId: 'user5', revieweeId: 'user1', rating: 4, text: 'Good drill, batteries lasted all day. Delivery was a nice touch. Only minor issue was a slightly worn chuck but still worked perfectly.', createdAt: Date.now() - 86400000 * 30 },
-            { id: 'rv3', bookingId: 'bk3', toolId: 'tool1', reviewerId: 'user6', revieweeId: 'user1', rating: 5, text: 'Perfect condition! Mike is super responsive and the drill is top quality. Highly recommend.', createdAt: Date.now() - 86400000 * 23 },
-            { id: 'rv4', bookingId: 'bk4', toolId: 'tool2', reviewerId: 'user3', revieweeId: 'user1', rating: 5, text: 'This circular saw is a beast! Cut through everything I needed. Mike even gave me tips on blade angle. Fantastic host.', createdAt: Date.now() - 86400000 * 36 },
-            { id: 'rv5', bookingId: 'bk5', toolId: 'tool2', reviewerId: 'user4', revieweeId: 'user1', rating: 4, text: 'Great saw, very powerful. Came with an extra blade which was handy. Quick pickup, no hassle.', createdAt: Date.now() - 86400000 * 26 },
-            { id: 'rv6', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user5', revieweeId: 'user1', rating: 5, text: 'The paint sprayer worked like a charm on my deck! Even coverage and easy cleanup. Mike included extra nozzles.', createdAt: Date.now() - 86400000 * 10 },
+            { id: 'rv1', bookingId: 'bk1', toolId: 'tool1', reviewerId: 'user3', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'Excellent drill! Mike had it fully charged and ready to go. Made my shelf project so much easier. Will rent again!', createdAt: Date.now() - 86400000 * 38 },
+            { id: 'rv2', bookingId: 'bk2', toolId: 'tool1', reviewerId: 'user5', revieweeId: 'user1', toolRating: 4, sellerRating: 5, rating: 4, text: 'Good drill, batteries lasted all day. Delivery was a nice touch. Only minor issue was a slightly worn chuck but still worked perfectly.', createdAt: Date.now() - 86400000 * 30 },
+            { id: 'rv3', bookingId: 'bk3', toolId: 'tool1', reviewerId: 'user6', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'Perfect condition! Mike is super responsive and the drill is top quality. Highly recommend.', createdAt: Date.now() - 86400000 * 23 },
+            { id: 'rv4', bookingId: 'bk4', toolId: 'tool2', reviewerId: 'user3', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'This circular saw is a beast! Cut through everything I needed. Mike even gave me tips on blade angle. Fantastic host.', createdAt: Date.now() - 86400000 * 36 },
+            { id: 'rv5', bookingId: 'bk5', toolId: 'tool2', reviewerId: 'user4', revieweeId: 'user1', toolRating: 4, sellerRating: 4, rating: 4, text: 'Great saw, very powerful. Came with an extra blade which was handy. Quick pickup, no hassle.', createdAt: Date.now() - 86400000 * 26 },
+            { id: 'rv6', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user5', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'The paint sprayer worked like a charm on my deck! Even coverage and easy cleanup. Mike included extra nozzles.', createdAt: Date.now() - 86400000 * 10 },
             // Owner reviews renters
-            { id: 'rv7', bookingId: 'bk1', toolId: 'tool1', reviewerId: 'user1', revieweeId: 'user3', rating: 5, text: 'James returned the drill in perfect condition and on time. Great renter!', createdAt: Date.now() - 86400000 * 37 },
-            { id: 'rv8', bookingId: 'bk2', toolId: 'tool1', reviewerId: 'user1', revieweeId: 'user5', rating: 4, text: 'David took good care of the drill. Would rent to him again.', createdAt: Date.now() - 86400000 * 29 },
-            { id: 'rv9', bookingId: 'bk4', toolId: 'tool2', reviewerId: 'user1', revieweeId: 'user3', rating: 4, text: 'Returned on time and in good shape. Reliable renter.', createdAt: Date.now() - 86400000 * 35 },
-            { id: 'rv10', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user1', revieweeId: 'user5', rating: 5, text: 'David cleaned the sprayer thoroughly before returning. Excellent!', createdAt: Date.now() - 86400000 * 9 }
+            { id: 'rv7', bookingId: 'bk1', toolId: 'tool1', reviewerId: 'user1', revieweeId: 'user3', toolRating: 0, sellerRating: 5, rating: 5, text: 'James returned the drill in perfect condition and on time. Great renter!', createdAt: Date.now() - 86400000 * 37 },
+            { id: 'rv8', bookingId: 'bk2', toolId: 'tool1', reviewerId: 'user1', revieweeId: 'user5', toolRating: 0, sellerRating: 4, rating: 4, text: 'David took good care of the drill. Would rent to him again.', createdAt: Date.now() - 86400000 * 29 },
+            { id: 'rv9', bookingId: 'bk4', toolId: 'tool2', reviewerId: 'user1', revieweeId: 'user3', toolRating: 0, sellerRating: 4, rating: 4, text: 'Returned on time and in good shape. Reliable renter.', createdAt: Date.now() - 86400000 * 35 },
+            { id: 'rv10', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user1', revieweeId: 'user5', toolRating: 0, sellerRating: 5, rating: 5, text: 'David cleaned the sprayer thoroughly before returning. Excellent!', createdAt: Date.now() - 86400000 * 9 }
         ];
 
         // Seed a forum post
@@ -415,7 +424,7 @@ const Store = {
         this.set(this.KEYS.REVIEWS, reviews);
         this.set(this.KEYS.FORUM, forum);
         this.set(this.KEYS.NOTIFICATIONS, []);
-        this.set('tv_seeded_v5', true);
+        this.set('tv_seeded_v6', true);
     }
 };
 

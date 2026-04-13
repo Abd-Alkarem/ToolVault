@@ -413,18 +413,21 @@ const App = {
         var reviewee = Store.getUser(revieweeId);
         Components.showModal(Components.icon('star', 18) + ' Leave a Review',
             '<p style="color:var(--text-secondary);margin-bottom:var(--space-lg)">Rate your experience with ' + (reviewee ? reviewee.name : 'this user') + ' for <strong>' + (tool ? tool.name : 'this tool') + '</strong></p>' +
-            '<div class="form-group"><label class="form-label">Rating</label>' + Components.starInput('review-rating', 0) + '</div>' +
-            '<div class="form-group"><label class="form-label">Review</label><textarea class="form-textarea" id="review-text" placeholder="Share your experience..."></textarea></div>',
+            '<div class="form-group"><label class="form-label">' + Components.icon('wrench', 14) + ' Product Rating</label>' + Components.starInput('review-tool-rating', 0) + '</div>' +
+            '<div class="form-group"><label class="form-label">' + Components.icon('user', 14) + ' Seller Rating</label>' + Components.starInput('review-seller-rating', 0) + '</div>' +
+            '<div class="form-group"><label class="form-label">' + Components.icon('message-square', 14) + ' Comment</label><textarea class="form-textarea" id="review-text" placeholder="Share your experience..."></textarea></div>',
             '<button class="btn btn-primary" onclick="App.submitReview(\'' + bookingId + '\',\'' + revieweeId + '\')">' + Components.icon('send', 14) + ' Submit Review</button><button class="btn btn-secondary" onclick="Components.closeModal()">Cancel</button>');
         if (window.lucide) setTimeout(function () { lucide.createIcons(); }, 100);
     },
 
     submitReview(bookingId, revieweeId) {
         var booking = Store.getBooking(bookingId);
-        var rating = Components.getStarValue('review-rating');
+        var toolRating = Components.getStarValue('review-tool-rating');
+        var sellerRating = Components.getStarValue('review-seller-rating');
         var text = document.getElementById('review-text').value;
-        if (!rating) { Components.toast('Please select a rating.', 'error'); return; }
-        Store.addReview({ bookingId: bookingId, toolId: booking.toolId, reviewerId: Store.currentUser().id, revieweeId: revieweeId, rating: rating, text: text });
+        if (!toolRating) { Components.toast('Please rate the product.', 'error'); return; }
+        if (!sellerRating) { Components.toast('Please rate the seller.', 'error'); return; }
+        Store.addReview({ bookingId: bookingId, toolId: booking.toolId, reviewerId: Store.currentUser().id, revieweeId: revieweeId, toolRating: toolRating, sellerRating: sellerRating, rating: toolRating, text: text });
         // Mark as reviewed
         Store.updateBooking(bookingId, { reviewed: true });
         Components.closeModal(); Components.toast('Review submitted!', 'success'); this.route();
@@ -433,12 +436,14 @@ const App = {
     submitToolPageReview(bookingId, revieweeId) {
         var booking = Store.getBooking(bookingId);
         if (!booking) { Components.toast('Booking not found.', 'error'); return; }
-        var rating = Components.getStarValue('tool-review-rating');
+        var toolRating = Components.getStarValue('tool-page-product-rating');
+        var sellerRating = Components.getStarValue('tool-page-seller-rating');
         var textEl = document.getElementById('tool-review-text');
         var text = textEl ? textEl.value : '';
-        if (!rating) { Components.toast('Please select a rating.', 'error'); return; }
-        if (!text.trim()) { Components.toast('Please write a short review.', 'error'); return; }
-        Store.addReview({ bookingId: bookingId, toolId: booking.toolId, reviewerId: Store.currentUser().id, revieweeId: revieweeId, rating: rating, text: text });
+        if (!toolRating) { Components.toast('Please rate the product.', 'error'); return; }
+        if (!sellerRating) { Components.toast('Please rate the seller.', 'error'); return; }
+        if (!text.trim()) { Components.toast('Please write a short comment.', 'error'); return; }
+        Store.addReview({ bookingId: bookingId, toolId: booking.toolId, reviewerId: Store.currentUser().id, revieweeId: revieweeId, toolRating: toolRating, sellerRating: sellerRating, rating: toolRating, text: text });
         Store.updateBooking(bookingId, { reviewed: true });
         Components.toast('Review submitted! Thank you.', 'success');
         this.route();

@@ -105,8 +105,9 @@ Pages.toolDetail = function (toolId) {
         '<div style="margin-top:var(--space-2xl)" class="animate-in">' +
         '<h3 style="margin-bottom:var(--space-md)">' + Components.icon('message-square', 18) + ' Reviews (' + reviews.length + ')' + (tool.rating > 0 ? ' <span style="font-size:0.9rem;font-weight:400;color:var(--text-secondary);margin-left:8px">' + Components.stars(tool.rating) + ' ' + tool.rating + ' avg</span>' : '') + '</h3>' +
         (canReview ? '<div class="card" style="margin-bottom:var(--space-lg);border:1px solid var(--border-glow)"><div class="card-body"><h4 style="margin-bottom:var(--space-md)">' + Components.icon('edit-3', 16) + ' Write a Review</h4>' +
-        '<div class="form-group"><label class="form-label">Your Rating</label>' + Components.starInput('tool-review-rating', 0) + '</div>' +
-        '<div class="form-group"><label class="form-label">Your Review</label><textarea class="form-textarea" id="tool-review-text" rows="3" placeholder="Share your experience with this tool..."></textarea></div>' +
+        '<div class="form-group"><label class="form-label">' + Components.icon('wrench', 14) + ' Product Rating</label>' + Components.starInput('tool-page-product-rating', 0) + '</div>' +
+        '<div class="form-group"><label class="form-label">' + Components.icon('user', 14) + ' Seller Rating</label>' + Components.starInput('tool-page-seller-rating', 0) + '</div>' +
+        '<div class="form-group"><label class="form-label">' + Components.icon('message-square', 14) + ' Comment</label><textarea class="form-textarea" id="tool-review-text" rows="3" placeholder="Share your experience with this tool and the seller..."></textarea></div>' +
         '<button class="btn btn-primary" onclick="App.submitToolPageReview(\'' + reviewBookingId + '\',\'' + (owner ? owner.id : '') + '\')">' + Components.icon('send', 14) + ' Submit Review</button></div></div>' : '') +
         '<div class="card">' + (reviews.length > 0 ? reviews.map(function (r) { return Components.reviewCard(r); }).join('') : '<div class="card-body" style="text-align:center;color:var(--text-muted);padding:var(--space-2xl)">No reviews yet.' + (user && !isOwner ? ' Book this tool and be the first to review!' : '') + '</div>') + '</div></div></div>' +
         Components.footer();

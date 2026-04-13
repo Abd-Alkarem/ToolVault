@@ -197,13 +197,18 @@ const Components = {
     reviewCard(review) {
         var reviewer = Store.getUser(review.reviewerId);
         var date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        var toolR = review.toolRating || review.rating || 0;
+        var sellerR = review.sellerRating || review.rating || 0;
         return '<div class="review-card">' +
             '<div class="review-header">' +
             this.avatar(reviewer) +
             '<div><div class="review-author">' + (reviewer ? reviewer.name : 'Anonymous') + ' ' + (reviewer ? this.verifiedBadge(reviewer) : '') + '</div>' +
             '<div class="review-date">' + date + '</div></div>' +
-            '<div style="margin-left:auto">' + this.stars(review.rating) + '</div></div>' +
-            '<div class="review-text">' + review.text + '</div></div>';
+            '<div style="margin-left:auto;text-align:right">' +
+            '<div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;font-size:0.8rem;color:var(--text-muted)">' + this.icon('wrench', 12) + ' Product ' + this.stars(toolR) + '</div>' +
+            '<div style="display:flex;align-items:center;gap:6px;justify-content:flex-end;font-size:0.8rem;color:var(--text-muted);margin-top:2px">' + this.icon('user', 12) + ' Seller ' + this.stars(sellerR) + '</div>' +
+            '</div></div>' +
+            (review.text ? '<div class="review-text">' + review.text + '</div>' : '') + '</div>';
     },
 
     // ---- Toast ----
