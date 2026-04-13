@@ -124,7 +124,7 @@ const Components = {
         if (!tool) return '';
         var showActions = perspective === 'owner' && booking.status === 'pending';
         var showReturn = perspective === 'owner' && booking.status === 'active';
-        var showReview = booking.status === 'returned';
+        var showReview = booking.status === 'returned' && perspective === 'renter';
         var planLabels = { basic: 'Basic', standard: 'Standard', premium: 'Premium' };
         // Check if already reviewed
         var user = Store.currentUser();

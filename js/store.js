@@ -353,7 +353,7 @@ const Store = {
 
     // ---- Seed Data ----
     seed() {
-        if (this.get('tv_seeded_v6')) return;
+        if (this.get('tv_seeded_v7')) return;
         // Clear old data
         Object.values(this.KEYS).forEach(k => localStorage.removeItem(k));
         localStorage.removeItem('tv_seeded');
@@ -361,6 +361,7 @@ const Store = {
         localStorage.removeItem('tv_seeded_v3');
         localStorage.removeItem('tv_seeded_v4');
         localStorage.removeItem('tv_seeded_v5');
+        localStorage.removeItem('tv_seeded_v6');
 
         const toolImages = [
             'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
@@ -385,29 +386,30 @@ const Store = {
             { id: 'tool9', ownerId: 'user1', name: 'Ryobi Paint Sprayer Kit', description: 'Ryobi ONE+ 18V cordless paint sprayer. Perfect for decks, fences, and furniture. Includes 2 nozzles, cleaning kit, and battery.', category: 'Painting', condition: 'Good', pricePerDay: 12, image: toolImages[2], status: 'available', createdAt: Date.now() - 86400000 * 8, rating: 5.0, reviewCount: 1, tripCount: 1, deliveryAvailable: false, depositAmount: 45, guidelines: 'Clean thoroughly after use with warm water.', discount5: 10, discount20: 20, lat: 45.4112, lng: -75.6981 }
         ];
 
-        // Seed completed bookings
+        // Seed bookings: returned + pending + active so host can accept/decline/mark returned
         const bookings = [
-            { id: 'bk1', toolId: 'tool1', renterId: 'user3', ownerId: 'user1', startDate: '2026-03-01', endDate: '2026-03-04', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 40, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true },
-            { id: 'bk2', toolId: 'tool1', renterId: 'user5', ownerId: 'user1', startDate: '2026-03-10', endDate: '2026-03-13', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 32, protectionPlan: 'standard', deliveryRequested: true, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true },
+            // Returned (completed) bookings
+            { id: 'bk1', toolId: 'tool1', renterId: 'user3', ownerId: 'user1', startDate: '2026-03-01', endDate: '2026-03-04', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 40, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: false },
+            { id: 'bk2', toolId: 'tool1', renterId: 'user5', ownerId: 'user1', startDate: '2026-03-10', endDate: '2026-03-13', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 32, protectionPlan: 'standard', deliveryRequested: true, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: false },
             { id: 'bk3', toolId: 'tool1', renterId: 'user6', ownerId: 'user1', startDate: '2026-03-20', endDate: '2026-03-22', totalPrice: 16, status: 'returned', createdAt: Date.now() - 86400000 * 25, protectionPlan: 'premium', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: false },
-            { id: 'bk4', toolId: 'tool2', renterId: 'user3', ownerId: 'user1', startDate: '2026-03-05', endDate: '2026-03-08', totalPrice: 36, status: 'returned', createdAt: Date.now() - 86400000 * 38, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true },
+            { id: 'bk4', toolId: 'tool2', renterId: 'user3', ownerId: 'user1', startDate: '2026-03-05', endDate: '2026-03-08', totalPrice: 36, status: 'returned', createdAt: Date.now() - 86400000 * 38, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: false },
             { id: 'bk5', toolId: 'tool2', renterId: 'user4', ownerId: 'user1', startDate: '2026-03-15', endDate: '2026-03-18', totalPrice: 36, status: 'returned', createdAt: Date.now() - 86400000 * 28, protectionPlan: 'basic', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: false },
-            { id: 'bk6', toolId: 'tool9', renterId: 'user5', ownerId: 'user1', startDate: '2026-04-01', endDate: '2026-04-03', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 12, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true }
+            { id: 'bk6', toolId: 'tool9', renterId: 'user5', ownerId: 'user1', startDate: '2026-04-01', endDate: '2026-04-03', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 12, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: false },
+            // Pending bookings — host can Accept or Decline these
+            { id: 'bk7', toolId: 'tool1', renterId: 'user6', ownerId: 'user1', startDate: '2026-04-20', endDate: '2026-04-25', totalPrice: 40, status: 'pending', createdAt: Date.now() - 86400000 * 1, protectionPlan: 'standard', deliveryRequested: true, paymentMethod: 'card', paymentStatus: 'paid', reviewed: false, hostReviewed: false },
+            { id: 'bk8', toolId: 'tool2', renterId: 'user5', ownerId: 'user1', startDate: '2026-04-22', endDate: '2026-04-26', totalPrice: 48, status: 'pending', createdAt: Date.now() - 86400000 * 0.5, protectionPlan: 'premium', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: false, hostReviewed: false },
+            // Active booking — host can Mark Returned
+            { id: 'bk9', toolId: 'tool9', renterId: 'user3', ownerId: 'user1', startDate: '2026-04-10', endDate: '2026-04-14', totalPrice: 48, status: 'active', createdAt: Date.now() - 86400000 * 3, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: false, hostReviewed: false }
         ];
 
-        // Seed reviews (renter reviews tool & owner — with separate product + seller ratings)
+        // Seed reviews — only renters review products & sellers (like Amazon)
         const reviews = [
             { id: 'rv1', bookingId: 'bk1', toolId: 'tool1', reviewerId: 'user3', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'Excellent drill! Mike had it fully charged and ready to go. Made my shelf project so much easier. Will rent again!', createdAt: Date.now() - 86400000 * 38 },
             { id: 'rv2', bookingId: 'bk2', toolId: 'tool1', reviewerId: 'user5', revieweeId: 'user1', toolRating: 4, sellerRating: 5, rating: 4, text: 'Good drill, batteries lasted all day. Delivery was a nice touch. Only minor issue was a slightly worn chuck but still worked perfectly.', createdAt: Date.now() - 86400000 * 30 },
             { id: 'rv3', bookingId: 'bk3', toolId: 'tool1', reviewerId: 'user6', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'Perfect condition! Mike is super responsive and the drill is top quality. Highly recommend.', createdAt: Date.now() - 86400000 * 23 },
             { id: 'rv4', bookingId: 'bk4', toolId: 'tool2', reviewerId: 'user3', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'This circular saw is a beast! Cut through everything I needed. Mike even gave me tips on blade angle. Fantastic host.', createdAt: Date.now() - 86400000 * 36 },
             { id: 'rv5', bookingId: 'bk5', toolId: 'tool2', reviewerId: 'user4', revieweeId: 'user1', toolRating: 4, sellerRating: 4, rating: 4, text: 'Great saw, very powerful. Came with an extra blade which was handy. Quick pickup, no hassle.', createdAt: Date.now() - 86400000 * 26 },
-            { id: 'rv6', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user5', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'The paint sprayer worked like a charm on my deck! Even coverage and easy cleanup. Mike included extra nozzles.', createdAt: Date.now() - 86400000 * 10 },
-            // Owner reviews renters
-            { id: 'rv7', bookingId: 'bk1', toolId: 'tool1', reviewerId: 'user1', revieweeId: 'user3', toolRating: 0, sellerRating: 5, rating: 5, text: 'James returned the drill in perfect condition and on time. Great renter!', createdAt: Date.now() - 86400000 * 37 },
-            { id: 'rv8', bookingId: 'bk2', toolId: 'tool1', reviewerId: 'user1', revieweeId: 'user5', toolRating: 0, sellerRating: 4, rating: 4, text: 'David took good care of the drill. Would rent to him again.', createdAt: Date.now() - 86400000 * 29 },
-            { id: 'rv9', bookingId: 'bk4', toolId: 'tool2', reviewerId: 'user1', revieweeId: 'user3', toolRating: 0, sellerRating: 4, rating: 4, text: 'Returned on time and in good shape. Reliable renter.', createdAt: Date.now() - 86400000 * 35 },
-            { id: 'rv10', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user1', revieweeId: 'user5', toolRating: 0, sellerRating: 5, rating: 5, text: 'David cleaned the sprayer thoroughly before returning. Excellent!', createdAt: Date.now() - 86400000 * 9 }
+            { id: 'rv6', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user5', revieweeId: 'user1', toolRating: 5, sellerRating: 5, rating: 5, text: 'The paint sprayer worked like a charm on my deck! Even coverage and easy cleanup. Mike included extra nozzles.', createdAt: Date.now() - 86400000 * 10 }
         ];
 
         // Seed a forum post
@@ -424,7 +426,7 @@ const Store = {
         this.set(this.KEYS.REVIEWS, reviews);
         this.set(this.KEYS.FORUM, forum);
         this.set(this.KEYS.NOTIFICATIONS, []);
-        this.set('tv_seeded_v6', true);
+        this.set('tv_seeded_v7', true);
     }
 };
 
