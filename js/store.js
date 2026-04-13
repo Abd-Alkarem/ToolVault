@@ -345,12 +345,13 @@ const Store = {
 
     // ---- Seed Data ----
     seed() {
-        if (this.get('tv_seeded_v4')) return;
+        if (this.get('tv_seeded_v5')) return;
         // Clear old data
         Object.values(this.KEYS).forEach(k => localStorage.removeItem(k));
         localStorage.removeItem('tv_seeded');
         localStorage.removeItem('tv_seeded_v2');
         localStorage.removeItem('tv_seeded_v3');
+        localStorage.removeItem('tv_seeded_v4');
 
         const toolImages = [
             'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
@@ -359,30 +360,62 @@ const Store = {
         ];
 
         const users = [
-            { id: 'admin1', name: 'Steven Bulgin', email: 'admin@toolvault.com', password: 'admin123', role: 'admin', accountType: 'both', location: 'Ottawa, ON', avatar: '', joinedAt: Date.now() - 86400000 * 90, active: true, rating: 0, reviewCount: 0, verified: true, phone: '613-555-0100', bio: 'Platform administrator & avid DIYer.', tripCount: 0, responseRate: 100, responseTime: 'Within minutes', lat: 45.4215, lng: -75.6972 },
-            { id: 'user1', name: 'Mike Henderson', email: 'mike@email.com', password: 'pass123', role: 'user', accountType: 'host', location: 'Ottawa, ON', avatar: '', joinedAt: Date.now() - 86400000 * 60, active: true, rating: 0, reviewCount: 0, verified: true, phone: '613-555-0101', bio: 'Contractor with 10+ years experience. I keep all my tools in top shape!', tripCount: 0, responseRate: 98, responseTime: 'Within an hour', lat: 45.4112, lng: -75.6981 },
-            { id: 'user2', name: 'Sarah Chen', email: 'sarah@email.com', password: 'pass123', role: 'user', accountType: 'host', location: 'Kanata, ON', avatar: '', joinedAt: Date.now() - 86400000 * 45, active: true, rating: 0, reviewCount: 0, verified: false, phone: '613-555-0102', bio: 'Landscaping enthusiast. Happy to share my tool collection with the community!', tripCount: 0, responseRate: 100, responseTime: 'Within minutes', lat: 45.3088, lng: -75.8983 },
-            { id: 'user3', name: 'James Wilson', email: 'james@email.com', password: 'pass123', role: 'user', accountType: 'both', location: 'Barrhaven, ON', avatar: '', joinedAt: Date.now() - 86400000 * 30, active: true, rating: 0, reviewCount: 0, verified: false, phone: '613-555-0103', bio: 'Weekend warrior. Love helping neighbors with their projects.', tripCount: 0, responseRate: 92, responseTime: 'Within a few hours', lat: 45.2750, lng: -75.7384 },
-            { id: 'user4', name: 'Emily Brooks', email: 'emily@email.com', password: 'pass123', role: 'user', accountType: 'host', location: 'Orleans, ON', avatar: '', joinedAt: Date.now() - 86400000 * 20, active: true, rating: 0, reviewCount: 0, verified: false, phone: '613-555-0104', bio: 'Professional painter & home renovator.', tripCount: 0, responseRate: 95, responseTime: 'Within an hour', lat: 45.4766, lng: -75.5169 },
-            { id: 'user5', name: 'David Park', email: 'david@email.com', password: 'pass123', role: 'user', accountType: 'renter', location: 'Nepean, ON', avatar: '', joinedAt: Date.now() - 86400000 * 10, active: true, rating: 0, reviewCount: 0, verified: false, phone: '', bio: 'Just moved in and doing lots of home projects!', tripCount: 0, responseRate: 80, responseTime: 'Within a day', lat: 45.3526, lng: -75.7277 },
-            { id: 'user6', name: 'Lisa Martinez', email: 'lisa@email.com', password: 'pass123', role: 'user', accountType: 'renter', location: 'Gloucester, ON', avatar: '', joinedAt: Date.now() - 86400000 * 5, active: true, rating: 0, reviewCount: 0, verified: false, phone: '613-555-0106', bio: 'DIY mom of 3. Always need tools for the next home project!', tripCount: 0, responseRate: 96, responseTime: 'Within an hour', lat: 45.4305, lng: -75.5872 }
+            { id: 'admin1', name: 'Steven Bulgin', email: 'admin@toolvault.com', password: 'admin123', role: 'admin', accountType: 'both', location: 'Ottawa, ON', avatar: '', joinedAt: Date.now() - 86400000 * 90, active: true, rating: 4.9, reviewCount: 2, verified: true, phone: '613-555-0100', bio: 'Platform administrator & avid DIYer.', tripCount: 2, responseRate: 100, responseTime: 'Within minutes', lat: 45.4215, lng: -75.6972 },
+            { id: 'user1', name: 'Mike Henderson', email: 'mike@email.com', password: 'pass123', role: 'user', accountType: 'host', location: 'Ottawa, ON', avatar: '', joinedAt: Date.now() - 86400000 * 60, active: true, rating: 4.8, reviewCount: 5, verified: true, phone: '613-555-0101', bio: 'Contractor with 10+ years experience. I keep all my tools in top shape!', tripCount: 6, responseRate: 98, responseTime: 'Within an hour', lat: 45.4112, lng: -75.6981 },
+            { id: 'user2', name: 'Sarah Chen', email: 'sarah@email.com', password: 'pass123', role: 'user', accountType: 'host', location: 'Kanata, ON', avatar: '', joinedAt: Date.now() - 86400000 * 45, active: true, rating: 4.6, reviewCount: 2, verified: false, phone: '613-555-0102', bio: 'Landscaping enthusiast. Happy to share my tool collection with the community!', tripCount: 3, responseRate: 100, responseTime: 'Within minutes', lat: 45.3088, lng: -75.8983 },
+            { id: 'user3', name: 'James Wilson', email: 'james@email.com', password: 'pass123', role: 'user', accountType: 'both', location: 'Barrhaven, ON', avatar: '', joinedAt: Date.now() - 86400000 * 30, active: true, rating: 4.5, reviewCount: 1, verified: false, phone: '613-555-0103', bio: 'Weekend warrior. Love helping neighbors with their projects.', tripCount: 2, responseRate: 92, responseTime: 'Within a few hours', lat: 45.2750, lng: -75.7384 },
+            { id: 'user4', name: 'Emily Brooks', email: 'emily@email.com', password: 'pass123', role: 'user', accountType: 'host', location: 'Orleans, ON', avatar: '', joinedAt: Date.now() - 86400000 * 20, active: true, rating: 4.7, reviewCount: 1, verified: false, phone: '613-555-0104', bio: 'Professional painter & home renovator.', tripCount: 1, responseRate: 95, responseTime: 'Within an hour', lat: 45.4766, lng: -75.5169 },
+            { id: 'user5', name: 'David Park', email: 'david@email.com', password: 'pass123', role: 'user', accountType: 'renter', location: 'Nepean, ON', avatar: '', joinedAt: Date.now() - 86400000 * 10, active: true, rating: 4.3, reviewCount: 1, verified: false, phone: '', bio: 'Just moved in and doing lots of home projects!', tripCount: 2, responseRate: 80, responseTime: 'Within a day', lat: 45.3526, lng: -75.7277 },
+            { id: 'user6', name: 'Lisa Martinez', email: 'lisa@email.com', password: 'pass123', role: 'user', accountType: 'renter', location: 'Gloucester, ON', avatar: '', joinedAt: Date.now() - 86400000 * 5, active: true, rating: 4.9, reviewCount: 1, verified: false, phone: '613-555-0106', bio: 'DIY mom of 3. Always need tools for the next home project!', tripCount: 1, responseRate: 96, responseTime: 'Within an hour', lat: 45.4305, lng: -75.5872 }
         ];
 
         // Only Mike Henderson's tools
         const tools = [
-            { id: 'tool1', ownerId: 'user1', name: 'DeWalt Cordless Drill 20V MAX', description: 'Powerful 20V MAX cordless drill/driver kit. Includes 2 batteries, charger, and carrying case. Perfect for drilling, driving screws, and light-duty projects. Freshly maintained.', category: 'Power Tools', condition: 'New', pricePerDay: 8, image: toolImages[0], status: 'available', createdAt: Date.now() - 86400000 * 50, rating: 0, reviewCount: 0, tripCount: 0, deliveryAvailable: true, deliveryFee: 5, depositAmount: 50, guidelines: 'Please return with battery charged. Wipe down after use.', discount5: 10, discount20: 25, lat: 45.4112, lng: -75.6981 },
-            { id: 'tool2', ownerId: 'user1', name: 'Milwaukee Circular Saw 7-1/4"', description: 'Milwaukee M18 FUEL 7-1/4" circular saw. Cuts through plywood and 2x4s with ease. Battery and charger included. Comes with extra blade.', category: 'Power Tools', condition: 'Good', pricePerDay: 12, image: toolImages[1], status: 'available', createdAt: Date.now() - 86400000 * 45, rating: 0, reviewCount: 0, tripCount: 0, deliveryAvailable: false, depositAmount: 75, guidelines: 'Safety glasses required. Handle with care.', discount5: 15, discount20: 30, lat: 45.4112, lng: -75.6981 },
-            { id: 'tool9', ownerId: 'user1', name: 'Ryobi Paint Sprayer Kit', description: 'Ryobi ONE+ 18V cordless paint sprayer. Perfect for decks, fences, and furniture. Includes 2 nozzles, cleaning kit, and battery.', category: 'Painting', condition: 'Good', pricePerDay: 12, image: toolImages[2], status: 'available', createdAt: Date.now() - 86400000 * 8, rating: 0, reviewCount: 0, tripCount: 0, deliveryAvailable: false, depositAmount: 45, guidelines: 'Clean thoroughly after use with warm water.', discount5: 10, discount20: 20, lat: 45.4112, lng: -75.6981 }
+            { id: 'tool1', ownerId: 'user1', name: 'DeWalt Cordless Drill 20V MAX', description: 'Powerful 20V MAX cordless drill/driver kit. Includes 2 batteries, charger, and carrying case. Perfect for drilling, driving screws, and light-duty projects. Freshly maintained.', category: 'Power Tools', condition: 'New', pricePerDay: 8, image: toolImages[0], status: 'available', createdAt: Date.now() - 86400000 * 50, rating: 4.7, reviewCount: 3, tripCount: 4, deliveryAvailable: true, deliveryFee: 5, depositAmount: 50, guidelines: 'Please return with battery charged. Wipe down after use.', discount5: 10, discount20: 25, lat: 45.4112, lng: -75.6981 },
+            { id: 'tool2', ownerId: 'user1', name: 'Milwaukee Circular Saw 7-1/4"', description: 'Milwaukee M18 FUEL 7-1/4" circular saw. Cuts through plywood and 2x4s with ease. Battery and charger included. Comes with extra blade.', category: 'Power Tools', condition: 'Good', pricePerDay: 12, image: toolImages[1], status: 'available', createdAt: Date.now() - 86400000 * 45, rating: 4.5, reviewCount: 2, tripCount: 3, deliveryAvailable: false, depositAmount: 75, guidelines: 'Safety glasses required. Handle with care.', discount5: 15, discount20: 30, lat: 45.4112, lng: -75.6981 },
+            { id: 'tool9', ownerId: 'user1', name: 'Ryobi Paint Sprayer Kit', description: 'Ryobi ONE+ 18V cordless paint sprayer. Perfect for decks, fences, and furniture. Includes 2 nozzles, cleaning kit, and battery.', category: 'Painting', condition: 'Good', pricePerDay: 12, image: toolImages[2], status: 'available', createdAt: Date.now() - 86400000 * 8, rating: 5.0, reviewCount: 1, tripCount: 1, deliveryAvailable: false, depositAmount: 45, guidelines: 'Clean thoroughly after use with warm water.', discount5: 10, discount20: 20, lat: 45.4112, lng: -75.6981 }
         ];
 
-        // No pre-seeded bookings, reviews, or forum posts – fresh start
+        // Seed completed bookings
+        const bookings = [
+            { id: 'bk1', toolId: 'tool1', renterId: 'user3', ownerId: 'user1', startDate: '2026-03-01', endDate: '2026-03-04', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 40, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true },
+            { id: 'bk2', toolId: 'tool1', renterId: 'user5', ownerId: 'user1', startDate: '2026-03-10', endDate: '2026-03-13', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 32, protectionPlan: 'standard', deliveryRequested: true, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true },
+            { id: 'bk3', toolId: 'tool1', renterId: 'user6', ownerId: 'user1', startDate: '2026-03-20', endDate: '2026-03-22', totalPrice: 16, status: 'returned', createdAt: Date.now() - 86400000 * 25, protectionPlan: 'premium', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: false },
+            { id: 'bk4', toolId: 'tool2', renterId: 'user3', ownerId: 'user1', startDate: '2026-03-05', endDate: '2026-03-08', totalPrice: 36, status: 'returned', createdAt: Date.now() - 86400000 * 38, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true },
+            { id: 'bk5', toolId: 'tool2', renterId: 'user4', ownerId: 'user1', startDate: '2026-03-15', endDate: '2026-03-18', totalPrice: 36, status: 'returned', createdAt: Date.now() - 86400000 * 28, protectionPlan: 'basic', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: false },
+            { id: 'bk6', toolId: 'tool9', renterId: 'user5', ownerId: 'user1', startDate: '2026-04-01', endDate: '2026-04-03', totalPrice: 24, status: 'returned', createdAt: Date.now() - 86400000 * 12, protectionPlan: 'standard', deliveryRequested: false, paymentMethod: 'card', paymentStatus: 'paid', reviewed: true, hostReviewed: true }
+        ];
+
+        // Seed reviews (renter reviews tool & owner)
+        const reviews = [
+            { id: 'rv1', bookingId: 'bk1', toolId: 'tool1', reviewerId: 'user3', revieweeId: 'user1', rating: 5, text: 'Excellent drill! Mike had it fully charged and ready to go. Made my shelf project so much easier. Will rent again!', createdAt: Date.now() - 86400000 * 38 },
+            { id: 'rv2', bookingId: 'bk2', toolId: 'tool1', reviewerId: 'user5', revieweeId: 'user1', rating: 4, text: 'Good drill, batteries lasted all day. Delivery was a nice touch. Only minor issue was a slightly worn chuck but still worked perfectly.', createdAt: Date.now() - 86400000 * 30 },
+            { id: 'rv3', bookingId: 'bk3', toolId: 'tool1', reviewerId: 'user6', revieweeId: 'user1', rating: 5, text: 'Perfect condition! Mike is super responsive and the drill is top quality. Highly recommend.', createdAt: Date.now() - 86400000 * 23 },
+            { id: 'rv4', bookingId: 'bk4', toolId: 'tool2', reviewerId: 'user3', revieweeId: 'user1', rating: 5, text: 'This circular saw is a beast! Cut through everything I needed. Mike even gave me tips on blade angle. Fantastic host.', createdAt: Date.now() - 86400000 * 36 },
+            { id: 'rv5', bookingId: 'bk5', toolId: 'tool2', reviewerId: 'user4', revieweeId: 'user1', rating: 4, text: 'Great saw, very powerful. Came with an extra blade which was handy. Quick pickup, no hassle.', createdAt: Date.now() - 86400000 * 26 },
+            { id: 'rv6', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user5', revieweeId: 'user1', rating: 5, text: 'The paint sprayer worked like a charm on my deck! Even coverage and easy cleanup. Mike included extra nozzles.', createdAt: Date.now() - 86400000 * 10 },
+            // Owner reviews renters
+            { id: 'rv7', bookingId: 'bk1', toolId: 'tool1', reviewerId: 'user1', revieweeId: 'user3', rating: 5, text: 'James returned the drill in perfect condition and on time. Great renter!', createdAt: Date.now() - 86400000 * 37 },
+            { id: 'rv8', bookingId: 'bk2', toolId: 'tool1', reviewerId: 'user1', revieweeId: 'user5', rating: 4, text: 'David took good care of the drill. Would rent to him again.', createdAt: Date.now() - 86400000 * 29 },
+            { id: 'rv9', bookingId: 'bk4', toolId: 'tool2', reviewerId: 'user1', revieweeId: 'user3', rating: 4, text: 'Returned on time and in good shape. Reliable renter.', createdAt: Date.now() - 86400000 * 35 },
+            { id: 'rv10', bookingId: 'bk6', toolId: 'tool9', reviewerId: 'user1', revieweeId: 'user5', rating: 5, text: 'David cleaned the sprayer thoroughly before returning. Excellent!', createdAt: Date.now() - 86400000 * 9 }
+        ];
+
+        // Seed a forum post
+        const forum = [
+            { id: 'fp1', authorId: 'user3', title: 'Best way to drill into concrete?', body: 'Hey everyone! I need to mount a TV bracket on a concrete wall. Any tips on what drill bits to use? Should I rent a hammer drill?', createdAt: Date.now() - 86400000 * 15, replies: [
+                { id: 'r1', authorId: 'user1', text: 'Definitely go with a hammer drill and SDS masonry bits. I have one available if you need it!', createdAt: Date.now() - 86400000 * 14 },
+                { id: 'r2', authorId: 'user4', text: 'Make sure to use plastic anchors too. And go slow - let the drill do the work.', createdAt: Date.now() - 86400000 * 13 }
+            ]}
+        ];
+
         this.set(this.KEYS.USERS, users);
         this.set(this.KEYS.TOOLS, tools);
-        this.set(this.KEYS.BOOKINGS, []);
-        this.set(this.KEYS.REVIEWS, []);
-        this.set(this.KEYS.FORUM, []);
+        this.set(this.KEYS.BOOKINGS, bookings);
+        this.set(this.KEYS.REVIEWS, reviews);
+        this.set(this.KEYS.FORUM, forum);
         this.set(this.KEYS.NOTIFICATIONS, []);
-        this.set('tv_seeded_v4', true);
+        this.set('tv_seeded_v5', true);
     }
 };
 

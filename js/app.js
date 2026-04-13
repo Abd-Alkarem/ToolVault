@@ -430,6 +430,20 @@ const App = {
         Components.closeModal(); Components.toast('Review submitted!', 'success'); this.route();
     },
 
+    submitToolPageReview(bookingId, revieweeId) {
+        var booking = Store.getBooking(bookingId);
+        if (!booking) { Components.toast('Booking not found.', 'error'); return; }
+        var rating = Components.getStarValue('tool-review-rating');
+        var textEl = document.getElementById('tool-review-text');
+        var text = textEl ? textEl.value : '';
+        if (!rating) { Components.toast('Please select a rating.', 'error'); return; }
+        if (!text.trim()) { Components.toast('Please write a short review.', 'error'); return; }
+        Store.addReview({ bookingId: bookingId, toolId: booking.toolId, reviewerId: Store.currentUser().id, revieweeId: revieweeId, rating: rating, text: text });
+        Store.updateBooking(bookingId, { reviewed: true });
+        Components.toast('Review submitted! Thank you.', 'success');
+        this.route();
+    },
+
     // ==================== PROFILE ====================
     showEditProfile() {
         var user = Store.currentUser();

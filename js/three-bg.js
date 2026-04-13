@@ -119,9 +119,9 @@ function initThreeBackground() {
         group.position.set(x, y, z);
         group.userData = {
             orbitRadius: Math.sqrt(x * x + y * y),
-            orbitSpeed: (0.0003 + Math.random() * 0.0005) * (Math.random() > 0.5 ? 1 : -1),
+            orbitSpeed: (0.0001 + Math.random() * 0.00015) * (Math.random() > 0.5 ? 1 : -1),
             orbitAngle: Math.atan2(y, x),
-            rotSpeed: 0.002 + Math.random() * 0.003,
+            rotSpeed: 0.0008 + Math.random() * 0.0012,
             bobOffset: Math.random() * Math.PI * 2,
             baseZ: z,
             mat: mat,
@@ -218,12 +218,12 @@ function initThreeBackground() {
         shootTimer++;
 
         // Stars gentle drift
-        stars.rotation.y += 0.00008;
-        stars.rotation.x += 0.00003;
-        twinkleStars.rotation.y -= 0.00005;
+        stars.rotation.y += 0.00003;
+        stars.rotation.x += 0.00001;
+        twinkleStars.rotation.y -= 0.00002;
 
         // Twinkle effect
-        twinkleMat.opacity = 0.3 + Math.sin(time * 2) * 0.15;
+        twinkleMat.opacity = 0.3 + Math.sin(time * 0.8) * 0.1;
 
         // Planets orbit and bob
         planets.forEach(p => {
@@ -238,12 +238,12 @@ function initThreeBackground() {
 
         // Nebula pulse
         nebulae.forEach((n, i) => {
-            n.mat.opacity = (lt ? 0.04 : 0.03) + Math.sin(time * 0.5 + i * 2) * 0.015;
-            n.mesh.rotation.z += 0.0001;
+            n.mat.opacity = (lt ? 0.12 : 0.03) + Math.sin(time * 0.2 + i * 2) * 0.008;
+            n.mesh.rotation.z += 0.00003;
         });
 
         // Shooting stars
-        if (shootTimer % 120 === 0) {
+        if (shootTimer % 300 === 0) {
             const inactive = shootingStars.find(s => !s.userData.active);
             if (inactive) {
                 inactive.userData.active = true;
@@ -273,9 +273,9 @@ function initThreeBackground() {
             }
         });
 
-        // Mouse parallax — strong movement for visible hover effect
-        camera.position.x += (mouseX * 2.5 - camera.position.x) * 0.03;
-        camera.position.y += (-mouseY * 1.5 - camera.position.y) * 0.03;
+        // Mouse parallax — smooth gentle movement
+        camera.position.x += (mouseX * 1.0 - camera.position.x) * 0.015;
+        camera.position.y += (-mouseY * 0.6 - camera.position.y) * 0.015;
         camera.lookAt(0, 0, -5);
 
         renderer.render(scene, camera);
