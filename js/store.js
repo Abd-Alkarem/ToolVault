@@ -2,7 +2,7 @@
    TOOLVAULT – DATA STORE (localStorage)
    ============================================ */
 const Store = {
-    KEYS: { USERS: 'tv_users', TOOLS: 'tv_tools', BOOKINGS: 'tv_bookings', REVIEWS: 'tv_reviews', FORUM: 'tv_forum', SESSION: 'tv_session', NOTIFICATIONS: 'tv_notifications', GEO: 'tv_geo' },
+    KEYS: { USERS: 'tv_users', TOOLS: 'tv_tools', BOOKINGS: 'tv_bookings', REVIEWS: 'tv_reviews', FORUM: 'tv_forum', SESSION: 'tv_session', NOTIFICATIONS: 'tv_notifications', GEO: 'tv_geo', TICKETS: 'tv_tickets' },
 
     get(key) { try { return JSON.parse(localStorage.getItem(key)) || null; } catch { return null; } },
     set(key, val) { localStorage.setItem(key, JSON.stringify(val)); },
@@ -242,6 +242,39 @@ const Store = {
         this.set(this.KEYS.NOTIFICATIONS, notifs);
     },
 
+    // ---- Tickets ----
+    getTickets() { return this.get(this.KEYS.TICKETS) || []; },
+    getTicket(ticketId) { return this.getTickets().find(function(t) { return t.id === ticketId; }); },
+    getUserTickets(userId) { return this.getTickets().filter(function(t) { return t.userId === userId; }); },
+    addTicket(ticket) {
+        var tickets = this.getTickets();
+        ticket.id = this.genId();
+        ticket.createdAt = Date.now();
+        ticket.status = 'open';
+        ticket.replies = [];
+        tickets.unshift(ticket);
+        this.set(this.KEYS.TICKETS, tickets);
+        // Notify admins
+        var admins = this.getUsers().filter(function(u) { return u.role === 'admin'; });
+        admins.forEach(function(a) { Store.addNotification(a.id, 'New support ticket: ' + ticket.subject, 'ticket', ticket.id); });
+        return ticket;
+    },
+    replyToTicket(ticketId, reply) {
+        var tickets = this.getTickets();
+        var t = tickets.find(function(x) { return x.id === ticketId; });
+        if (t) {
+            reply.id = this.genId();
+            reply.createdAt = Date.now();
+            t.replies.push(reply);
+            this.set(this.KEYS.TICKETS, tickets);
+        }
+    },
+    updateTicketStatus(ticketId, status) {
+        var tickets = this.getTickets();
+        var t = tickets.find(function(x) { return x.id === ticketId; });
+        if (t) { t.status = status; this.set(this.KEYS.TICKETS, tickets); }
+    },
+
     // ---- Forum ----
     getForumPosts() {
         var posts = this.get(this.KEYS.FORUM) || [];
@@ -252,6 +285,9 @@ const Store = {
         });
     },
     getAllForumPosts() { return this.get(this.KEYS.FORUM) || []; },
+    getForumPost(postId) {
+        return (this.get(this.KEYS.FORUM) || []).find(function(p) { return p.id === postId; });
+    },
     addForumPost(p) { const posts = this.get(this.KEYS.FORUM) || []; p.id = this.genId(); p.createdAt = Date.now(); p.replies = []; posts.unshift(p); this.set(this.KEYS.FORUM, posts); return p; },
     addReply(postId, reply) {
         const posts = this.get(this.KEYS.FORUM) || [];
@@ -353,7 +389,7 @@ const Store = {
 
     // ---- Seed Data ----
     seed() {
-        if (this.get('tv_seeded_v7')) return;
+        if (this.get('tv_seeded_v8')) return;
         // Clear old data
         Object.values(this.KEYS).forEach(k => localStorage.removeItem(k));
         localStorage.removeItem('tv_seeded');
@@ -362,6 +398,7 @@ const Store = {
         localStorage.removeItem('tv_seeded_v4');
         localStorage.removeItem('tv_seeded_v5');
         localStorage.removeItem('tv_seeded_v6');
+        localStorage.removeItem('tv_seeded_v7');
 
         const toolImages = [
             'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
@@ -414,9 +451,9 @@ const Store = {
 
         // Seed a forum post
         const forum = [
-            { id: 'fp1', authorId: 'user3', title: 'Best way to drill into concrete?', body: 'Hey everyone! I need to mount a TV bracket on a concrete wall. Any tips on what drill bits to use? Should I rent a hammer drill?', createdAt: Date.now() - 86400000 * 15, replies: [
-                { id: 'r1', authorId: 'user1', text: 'Definitely go with a hammer drill and SDS masonry bits. I have one available if you need it!', createdAt: Date.now() - 86400000 * 14 },
-                { id: 'r2', authorId: 'user4', text: 'Make sure to use plastic anchors too. And go slow - let the drill do the work.', createdAt: Date.now() - 86400000 * 13 }
+            { id: 'fp1', authorId: 'user3', category: 'Tips & Tricks', title: 'Best way to drill into concrete?', body: 'Hey everyone! I need to mount a TV bracket on a concrete wall. Any tips on what drill bits to use? Should I rent a hammer drill?', createdAt: Date.now() - 86400000 * 15, replies: [
+                { id: 'r1', authorId: 'user1', body: 'Definitely go with a hammer drill and SDS masonry bits. I have one available if you need it!', createdAt: Date.now() - 86400000 * 14 },
+                { id: 'r2', authorId: 'user4', body: 'Make sure to use plastic anchors too. And go slow - let the drill do the work.', createdAt: Date.now() - 86400000 * 13 }
             ]}
         ];
 
@@ -426,8 +463,62 @@ const Store = {
         this.set(this.KEYS.REVIEWS, reviews);
         this.set(this.KEYS.FORUM, forum);
         this.set(this.KEYS.NOTIFICATIONS, []);
-        this.set('tv_seeded_v7', true);
+        this.set(this.KEYS.TICKETS, []);
+        this.set('tv_seeded_v8', true);
     }
 };
 
-Store.seed();
+// Server sync methods
+Store._syncToServer = function(key, val) {
+    fetch('/api/store/' + encodeURIComponent(key), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: val })
+    }).catch(function(err) { console.warn('Sync failed for', key, err); });
+};
+
+Store._origSet = Store.set;
+Store.set = function(key, val) {
+    localStorage.setItem(key, JSON.stringify(val));
+    // Don't sync session or geo to server (per-browser data)
+    if (key !== Store.KEYS.SESSION && key !== Store.KEYS.GEO) {
+        Store._syncToServer(key, val);
+    }
+};
+
+Store.loadFromServer = function() {
+    return fetch('/api/store')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            var keys = Object.keys(data);
+            if (keys.length === 0) return false;
+            keys.forEach(function(key) {
+                // Don't overwrite session or geo from server
+                if (key === Store.KEYS.SESSION || key === Store.KEYS.GEO) return;
+                localStorage.setItem(key, JSON.stringify(data[key]));
+            });
+            return true;
+        })
+        .catch(function(err) {
+            console.warn('Failed to load from server:', err);
+            return false;
+        });
+};
+
+Store._pushAllToServer = function() {
+    var data = {};
+    var allKeys = Object.values(Store.KEYS).concat(['tv_seeded_v8']);
+    allKeys.forEach(function(key) {
+        if (key === Store.KEYS.SESSION || key === Store.KEYS.GEO) return;
+        var val = Store.get(key);
+        if (val !== null) data[key] = val;
+    });
+    fetch('/api/store/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    }).catch(function(err) { console.warn('Bulk sync failed:', err); });
+};
+
+// Seed is now called from App init after server load check
+// Store.seed();

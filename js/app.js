@@ -27,22 +27,60 @@ const App = {
     },
 
     _loadTheme() {
-        var saved = localStorage.getItem('tv_theme') || 'dark';
-        document.documentElement.setAttribute('data-theme', saved);
+        var savedTheme = localStorage.getItem('tv_theme') || 'dark';
+        var savedStyle = localStorage.getItem('tv_style') || 'modern';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.documentElement.setAttribute('data-style', savedStyle);
     },
 
-    toggleTheme() {
-        var current = document.documentElement.getAttribute('data-theme') || 'dark';
-        var next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('tv_theme', next);
-        this._setupNav();
-        if (window.lucide) setTimeout(function () { lucide.createIcons(); }, 80);
+    showAppearanceModal() {
+        var currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        var currentStyle = document.documentElement.getAttribute('data-style') || 'modern';
+        
+        var themesHtml = [
+            { id: 'dark', name: 'Dark', icon: 'moon' },
+            { id: 'light', name: 'Light', icon: 'sun' },
+            { id: 'nature', name: 'Nature', icon: 'leaf' },
+            { id: 'cyber', name: 'Cyber', icon: 'cpu' }
+        ].map(function(t) {
+            var active = t.id === currentTheme ? 'active' : '';
+            return '<div class="account-type-btn ' + active + '" onclick="App.setTheme(\'' + t.id + '\', this)" style="padding:var(--space-md) 8px">' + Components.icon(t.icon, 20) + '<div style="margin-top:8px;font-size:0.85rem">' + t.name + '</div></div>';
+        }).join('');
+
+        var stylesHtml = [
+            { id: 'modern', name: 'Modern', desc: 'Rounded edges, soft shadows' },
+            { id: 'brutalist', name: 'Brutalist', desc: 'Sharp edges, thick borders' },
+            { id: 'minimalist', name: 'Minimalist', desc: 'No borders, flat colors' }
+        ].map(function(s) {
+            var active = s.id === currentStyle ? 'active' : '';
+            return '<div class="account-type-btn ' + active + '" onclick="App.setStyle(\'' + s.id + '\', this)" style="padding:var(--space-md) 8px;text-align:left">' + 
+                   '<div style="font-weight:600">' + s.name + '</div>' +
+                   '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">' + s.desc + '</div></div>';
+        }).join('');
+
+        Components.showModal(Components.icon('palette', 18) + ' Appearance Settings',
+            '<div style="margin-bottom:var(--space-xl)"><h4 style="margin-bottom:var(--space-sm);color:var(--text-secondary)">Color Theme</h4><div style="display:flex;gap:var(--space-sm)">' + themesHtml + '</div></div>' +
+            '<div><h4 style="margin-bottom:var(--space-sm);color:var(--text-secondary)">Layout Style</h4><div style="display:flex;flex-direction:column;gap:var(--space-sm)">' + stylesHtml + '</div></div>',
+            '<button class="btn btn-primary" style="width:100%" onclick="Components.closeModal()">Done</button>');
+        if (window.lucide) setTimeout(function () { lucide.createIcons(); }, 50);
     },
 
-    _getThemeIcon() {
-        var theme = document.documentElement.getAttribute('data-theme') || 'dark';
-        return theme === 'dark' ? Components.icon('sun', 18) : Components.icon('moon', 18);
+    setTheme(theme, btn) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('tv_theme', theme);
+        if (btn) {
+            btn.parentElement.querySelectorAll('.account-type-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+        }
+    },
+
+    setStyle(style, btn) {
+        document.documentElement.setAttribute('data-style', style);
+        localStorage.setItem('tv_style', style);
+        if (btn) {
+            btn.parentElement.querySelectorAll('.account-type-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+        }
     },
 
     _requestGeolocation() {
@@ -85,6 +123,14 @@ const App = {
             case 'admin': app.innerHTML = Pages.admin(); break;
             case 'forum': app.innerHTML = Pages.forum(); break;
             case 'notifications': app.innerHTML = Pages.notifications(); break;
+            case 'safety': app.innerHTML = Pages.safety(); break;
+            case 'help': app.innerHTML = Pages.help(); break;
+            case 'contact': app.innerHTML = Pages.contact(); break;
+            case 'terms': app.innerHTML = Pages.terms(); break;
+            case 'privacy': app.innerHTML = Pages.privacy(); break;
+            case 'cookies': app.innerHTML = Pages.cookies(); break;
+            case 'insurance': app.innerHTML = Pages.insurance(); break;
+            case 'my-tickets': app.innerHTML = Pages.myTickets(); break;
             default: app.innerHTML = Pages.landing();
         }
         this._setupNav();
@@ -107,7 +153,7 @@ const App = {
                 '<a href="#/bookings" class="nav-link">Bookings</a>' +
                 '<a href="#/forum" class="nav-link">Forum</a>' +
                 (Store.isAdmin() ? '<a href="#/admin" class="nav-link">Admin</a>' : '');
-            actions.innerHTML = '<button class="theme-toggle" onclick="App.toggleTheme()" title="Toggle theme">' + this._getThemeIcon() + '</button>' +
+            actions.innerHTML = '<button class="theme-toggle" onclick="App.showAppearanceModal()" title="Appearance settings">' + Components.icon('palette', 18) + '</button>' +
                 '<a href="#/notifications" class="btn btn-ghost" style="position:relative">' + Components.icon('bell', 18) + (unread > 0 ? '<span class="notification-dot"></span>' : '') + '</a>' +
                 '<a href="#/profile" class="btn btn-ghost">' + Components.avatar(user) + ' <span style="margin-left:4px">' + user.name.split(' ')[0] + '</span></a>' +
                 '<button class="btn btn-secondary btn-sm" onclick="App.handleLogout()">Logout</button>';
@@ -120,13 +166,13 @@ const App = {
                 '<a href="#/forum" class="nav-link">' + Components.icon('message-circle', 16) + ' Forum</a>' +
                 (Store.isAdmin() ? '<a href="#/admin" class="nav-link">' + Components.icon('shield', 16) + ' Admin</a>' : '') +
                 '<hr style="border-color:var(--border-color);margin:var(--space-md) 0">' +
-                '<button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="App.toggleTheme()">' + this._getThemeIcon() + ' Toggle Theme</button>' +
+                '<button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="App.showAppearanceModal()">' + Components.icon('palette', 16) + ' Appearance</button>' +
                 '<button class="btn btn-secondary" style="width:100%" onclick="App.handleLogout()">Logout</button>';
         } else {
             nav.innerHTML = '<a href="#/" class="nav-link">Home</a><a href="#/browse" class="nav-link">Browse</a><a href="#/about" class="nav-link">About</a><a href="#/forum" class="nav-link">Forum</a>';
-            actions.innerHTML = '<button class="theme-toggle" onclick="App.toggleTheme()" title="Toggle theme">' + this._getThemeIcon() + '</button>' +
+            actions.innerHTML = '<button class="theme-toggle" onclick="App.showAppearanceModal()" title="Appearance settings">' + Components.icon('palette', 18) + '</button>' +
                 '<a href="#/login" class="btn btn-ghost">Sign In</a><a href="#/register" class="btn btn-primary btn-sm">Get Started</a>';
-            mobile.innerHTML = '<a href="#/" class="nav-link">' + Components.icon('home', 16) + ' Home</a><a href="#/browse" class="nav-link">' + Components.icon('search', 16) + ' Browse Tools</a><a href="#/about" class="nav-link">' + Components.icon('info', 16) + ' About</a><a href="#/forum" class="nav-link">' + Components.icon('message-circle', 16) + ' Forum</a><hr style="border-color:var(--border-color);margin:var(--space-md) 0"><button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="App.toggleTheme()">' + this._getThemeIcon() + ' Toggle Theme</button><a href="#/login" class="btn btn-secondary" style="width:100%;margin-bottom:8px">Sign In</a><a href="#/register" class="btn btn-primary" style="width:100%">Get Started</a>';
+            mobile.innerHTML = '<a href="#/" class="nav-link">' + Components.icon('home', 16) + ' Home</a><a href="#/browse" class="nav-link">' + Components.icon('search', 16) + ' Browse Tools</a><a href="#/about" class="nav-link">' + Components.icon('info', 16) + ' About</a><a href="#/forum" class="nav-link">' + Components.icon('message-circle', 16) + ' Forum</a><hr style="border-color:var(--border-color);margin:var(--space-md) 0"><button class="btn btn-ghost" style="width:100%;margin-bottom:8px" onclick="App.showAppearanceModal()">' + Components.icon('palette', 16) + ' Appearance</button><a href="#/login" class="btn btn-secondary" style="width:100%;margin-bottom:8px">Sign In</a><a href="#/register" class="btn btn-primary" style="width:100%">Get Started</a>';
         }
         // Render Lucide icons in nav
         if (window.lucide) setTimeout(function () { lucide.createIcons(); }, 80);
@@ -199,7 +245,15 @@ const App = {
         e.preventDefault();
         var user = Store.currentUser();
         var imageData = Components.getUploadedImage('tool-image-preview');
-        var defaultImages = ['https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop', 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&h=300&fit=crop', 'https://images.unsplash.com/photo-1530124566582-a45a7c3fd4ba?w=400&h=300&fit=crop'];
+        var defaultImages = [
+            'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=300&fit=crop',
+            'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=400&h=300&fit=crop',
+            'https://images.unsplash.com/photo-1586864387789-628af9feed72?w=400&h=300&fit=crop',
+            'https://images.unsplash.com/photo-1530124566582-a45a7c3fd4ba?w=400&h=300&fit=crop',
+            'https://images.unsplash.com/photo-1522273400909-fd1a8f77637e?w=400&h=300&fit=crop',
+            'https://images.unsplash.com/photo-1584063236424-d1d8ef3df503?w=400&h=300&fit=crop',
+            'https://images.unsplash.com/photo-1416879598555-25916053b2ce?w=400&h=300&fit=crop'
+        ];
         var delivery = document.getElementById('tool-delivery').checked;
         var geo = Store.getGeo();
         Store.addTool({
@@ -452,18 +506,77 @@ const App = {
     // ==================== PROFILE ====================
     showEditProfile() {
         var user = Store.currentUser();
+        var avatarPreview = (user.avatar && user.avatar.length > 10)
+            ? '<img src="' + user.avatar + '" alt="Preview" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+            : '<div class="image-upload-placeholder">' + Components.icon('camera', 32) + '<br><span>Upload Photo</span></div>';
         Components.showModal(Components.icon('user', 18) + ' Edit Profile',
+            '<div class="form-group"><label class="form-label">Profile Picture</label>' +
+            '<div style="display:flex;align-items:center;gap:var(--space-md)">' +
+            '<div id="pfp-preview" style="width:80px;height:80px;border-radius:50%;border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0" onclick="document.getElementById(\'pfp-input\').click()">' + avatarPreview + '</div>' +
+            '<div><button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById(\'pfp-input\').click()">' + Components.icon('upload', 14) + ' Change Photo</button>' +
+            (user.avatar && user.avatar.length > 10 ? ' <button class="btn btn-ghost btn-sm" type="button" onclick="App._clearProfilePic()" style="color:var(--accent-red)">' + Components.icon('x', 14) + ' Remove</button>' : '') +
+            '<input type="file" id="pfp-input" accept="image/*" style="display:none" onchange="App._handlePfpUpload()">' +
+            '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">PNG, JPG up to 2MB. Will be cropped to a circle.</div></div></div></div>' +
             '<div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="edit-name" value="' + user.name + '"></div>' +
             '<div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="edit-email" value="' + user.email + '"></div>' +
             '<div class="grid-2"><div class="form-group"><label class="form-label">Location</label><input type="text" class="form-input" id="edit-location" value="' + user.location + '"></div><div class="form-group"><label class="form-label">Phone</label><input type="tel" class="form-input" id="edit-phone" value="' + (user.phone || '') + '"></div></div>' +
             '<div class="form-group"><label class="form-label">Bio</label><textarea class="form-textarea" id="edit-bio" style="min-height:60px">' + (user.bio || '') + '</textarea></div>',
             '<button class="btn btn-primary" onclick="App.saveProfile()">' + Components.icon('check', 14) + ' Save</button><button class="btn btn-secondary" onclick="Components.closeModal()">Cancel</button>');
+        if (window.lucide) setTimeout(function () { lucide.createIcons(); }, 100);
+    },
+
+    _handlePfpUpload() {
+        var input = document.getElementById('pfp-input');
+        var preview = document.getElementById('pfp-preview');
+        if (!input || !input.files || !input.files[0]) return;
+        var file = input.files[0];
+        if (file.size > 2 * 1024 * 1024) { Components.toast('Image must be under 2MB', 'error'); return; }
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var img = new Image();
+            img.onload = function () {
+                var canvas = document.createElement('canvas');
+                var size = 200;
+                canvas.width = size;
+                canvas.height = size;
+                var ctx = canvas.getContext('2d');
+                var sx, sy, sw, sh;
+                if (img.width > img.height) {
+                    sw = img.height; sh = img.height; sx = (img.width - sw) / 2; sy = 0;
+                } else {
+                    sw = img.width; sh = img.width; sx = 0; sy = (img.height - sh) / 2;
+                }
+                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, size, size);
+                var resized = canvas.toDataURL('image/jpeg', 0.7);
+                preview.innerHTML = '<img src="' + resized + '" alt="Preview" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+                preview.dataset.imageData = resized;
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    },
+
+    _clearProfilePic() {
+        var preview = document.getElementById('pfp-preview');
+        preview.innerHTML = '<div class="image-upload-placeholder">' + Components.icon('camera', 32) + '<br><span>Upload Photo</span></div>';
+        preview.dataset.imageData = 'CLEARED';
+        if (window.lucide) setTimeout(function () { lucide.createIcons(); }, 50);
     },
 
     saveProfile() {
-        var user = Store.currentUser();
-        Store.updateUser(user.id, { name: document.getElementById('edit-name').value, email: document.getElementById('edit-email').value, location: document.getElementById('edit-location').value, phone: document.getElementById('edit-phone').value, bio: document.getElementById('edit-bio').value });
-        Components.closeModal(); Components.toast('Profile updated!', 'success'); this.route();
+        try {
+            var user = Store.currentUser();
+            var updates = { name: document.getElementById('edit-name').value, email: document.getElementById('edit-email').value, location: document.getElementById('edit-location').value, phone: document.getElementById('edit-phone').value, bio: document.getElementById('edit-bio').value };
+            var pfpPreview = document.getElementById('pfp-preview');
+            if (pfpPreview && pfpPreview.dataset.imageData) {
+                updates.avatar = pfpPreview.dataset.imageData === 'CLEARED' ? '' : pfpPreview.dataset.imageData;
+            }
+            Store.updateUser(user.id, updates);
+            Components.closeModal(); Components.toast('Profile updated!', 'success'); this.route();
+        } catch (e) {
+            console.error('Save profile error:', e);
+            Components.toast('Error saving profile. Try a smaller image.', 'error');
+        }
     },
 
     // ==================== VERIFICATION ====================
@@ -518,10 +631,12 @@ const App = {
         var bookings = Store.getBookings();
         var posts = Store.getAllForumPosts();
 
+        var tickets = Store.getTickets();
         if (tab === 'users') { tabs[0].classList.add('active'); content.innerHTML = Pages._adminUsersTab(users); }
         else if (tab === 'tools') { tabs[1].classList.add('active'); content.innerHTML = Pages._adminToolsTab(tools); }
         else if (tab === 'forum') { tabs[2].classList.add('active'); content.innerHTML = Pages._adminForumTab(posts); }
         else if (tab === 'bookings') { tabs[3].classList.add('active'); content.innerHTML = Pages._adminBookingsTab(bookings); }
+        else if (tab === 'tickets') { tabs[4].classList.add('active'); content.innerHTML = Pages._adminTicketsTab(tickets); }
         if (window.lucide) setTimeout(function () { lucide.createIcons(); }, 50);
     },
 
@@ -624,11 +739,7 @@ const App = {
     },
 
     showForumPost(postId) {
-        var allPosts = Store.getForumPosts().concat(Store.getAllForumPosts());
-        var post = null;
-        for (var i = 0; i < allPosts.length; i++) {
-            if (allPosts[i].id === postId) { post = allPosts[i]; break; }
-        }
+        var post = Store.getForumPost(postId);
         if (!post) return;
         var author = Store.getUser(post.authorId);
         var date = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -636,10 +747,11 @@ const App = {
         var repliesHtml = post.replies.map(function (r) {
             var ra = Store.getUser(r.authorId);
             var rd = new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            return '<div style="padding:var(--space-md);border-top:1px solid var(--border-color);display:flex;gap:var(--space-md)">' + Components.avatar(ra) + '<div><div style="font-weight:600;font-size:0.9rem">' + (ra ? ra.name : 'Unknown') + ' <span style="color:var(--text-muted);font-weight:400;font-size:0.8rem">' + rd + '</span></div><div style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px">' + r.body + '</div></div></div>';
+            var rText = r.body || r.text || '';
+            return '<div style="padding:var(--space-md);border-top:1px solid var(--border-color);display:flex;gap:var(--space-md)">' + Components.avatar(ra) + '<div><div style="font-weight:600;font-size:0.9rem">' + (ra ? ra.name : 'Unknown') + ' <span style="color:var(--text-muted);font-weight:400;font-size:0.8rem">' + rd + '</span></div><div style="color:var(--text-secondary);font-size:0.9rem;margin-top:4px">' + rText + '</div></div></div>';
         }).join('');
         Components.showModal(post.title,
-            '<div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">' + Components.avatar(author) + '<div><div style="font-weight:600">' + (author ? author.name : 'Unknown') + '</div><div style="color:var(--text-muted);font-size:0.8rem">' + date + ' · ' + post.category + '</div></div></div>' +
+            '<div style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-md)">' + Components.avatar(author) + '<div><div style="font-weight:600">' + (author ? author.name : 'Unknown') + '</div><div style="color:var(--text-muted);font-size:0.8rem">' + date + ' · ' + (post.category || 'General') + '</div></div></div>' +
             '<p style="color:var(--text-secondary);line-height:1.8;margin-bottom:var(--space-lg)">' + post.body + '</p>' +
             '<h4 style="margin-bottom:var(--space-sm)">' + Components.icon('message-circle', 16) + ' Replies (' + post.replies.length + ')</h4>' +
             '<div class="card" style="margin-bottom:var(--space-md)">' + (repliesHtml || '<div style="padding:var(--space-lg);text-align:center;color:var(--text-muted)">No replies yet.</div>') + '</div>' +
@@ -660,7 +772,107 @@ const App = {
         var posts = cat === 'All' ? Store.getForumPosts() : Store.getForumPosts().filter(function (p) { return p.category === cat; });
         document.getElementById('forum-posts').innerHTML = posts.map(function (p) { return Pages._forumPostCard(p); }).join('') || Components.emptyState('message-circle', 'No posts', 'Start a discussion!');
         if (window.lucide) setTimeout(function () { lucide.createIcons(); }, 50);
+    },
+
+    // ==================== CONTACT FORM ====================
+    submitContactForm() {
+        var name = document.getElementById('contact-name').value;
+        var email = document.getElementById('contact-email').value;
+        var subject = document.getElementById('contact-subject').value;
+        var message = document.getElementById('contact-message').value;
+        if (!name || !email || !message) { Components.toast('Please fill in all required fields.', 'error'); return; }
+        var user = Store.currentUser();
+        Store.addTicket({ userId: user ? user.id : null, name: name, email: email, subject: subject, message: message });
+        Components.toast('Ticket submitted! We\'ll get back to you within 24 hours.', 'success');
+        document.getElementById('contact-name').value = '';
+        document.getElementById('contact-email').value = '';
+        document.getElementById('contact-message').value = '';
+    },
+
+    // ==================== ADMIN TICKET ACTIONS ====================
+    adminReplyTicket(ticketId) {
+        var ticket = Store.getTicket(ticketId);
+        if (!ticket) return;
+        var prevReplies = '';
+        if (ticket.replies && ticket.replies.length > 0) {
+            prevReplies = ticket.replies.map(function (r) {
+                var ra = r.adminId ? Store.getUser(r.adminId) : null;
+                var rd = new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return '<div style="display:flex;gap:8px;margin-top:8px;padding:8px;background:var(--bg-glass);border-radius:var(--radius-sm);font-size:0.85rem;border-left:3px solid var(--accent-primary)">' +
+                    '<div style="flex-shrink:0">' + Components.avatar(ra) + '</div>' +
+                    '<div><div style="font-weight:600;font-size:0.8rem">' + (ra ? ra.name : 'Admin') + ' <span style="color:var(--text-muted);font-weight:400">' + rd + '</span></div>' +
+                    '<div style="color:var(--text-secondary);margin-top:2px">' + r.body + '</div></div></div>';
+            }).join('');
+            prevReplies = '<div style="margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid var(--border-color)"><span style="font-size:0.8rem;color:var(--text-muted)">Previous replies</span>' + prevReplies + '</div>';
+        }
+        Components.showModal(Components.icon('reply', 18) + ' Reply to Ticket',
+            '<div class="card" style="margin-bottom:var(--space-md)"><div class="card-body">' +
+            '<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px">' + ticket.subject + ' &middot; from ' + (ticket.name || 'Unknown') + '</div>' +
+            '<p style="color:var(--text-secondary);font-size:0.9rem">' + ticket.message + '</p>' +
+            prevReplies + '</div></div>' +
+            '<div class="form-group"><label class="form-label">Your Reply</label><textarea class="form-textarea" id="ticket-reply-body" placeholder="Type your response..." style="min-height:100px"></textarea></div>',
+            '<button class="btn btn-primary" onclick="App._sendTicketReply(\'' + ticketId + '\')">' + Components.icon('send', 14) + ' Send Reply</button><button class="btn btn-secondary" onclick="Components.closeModal()">Cancel</button>');
+    },
+
+    _sendTicketReply(ticketId) {
+        var body = document.getElementById('ticket-reply-body').value;
+        if (!body.trim()) { Components.toast('Please write a reply.', 'error'); return; }
+        var admin = Store.currentUser();
+        Store.replyToTicket(ticketId, { adminId: admin.id, body: body });
+        Store.updateTicketStatus(ticketId, 'replied');
+        var ticket = Store.getTicket(ticketId);
+        if (ticket && ticket.userId) {
+            Store.addNotification(ticket.userId, 'Support replied to your ticket: "' + ticket.subject + '"', 'ticket', ticketId);
+        }
+        Components.closeModal();
+        Components.toast('Reply sent!', 'success');
+        this.switchAdminTab('tickets');
+    },
+
+    adminCloseTicket(ticketId) {
+        Store.updateTicketStatus(ticketId, 'closed');
+        var ticket = Store.getTicket(ticketId);
+        if (ticket && ticket.userId) {
+            Store.addNotification(ticket.userId, 'Your support ticket "' + ticket.subject + '" has been closed.', 'ticket', ticketId);
+        }
+        Components.toast('Ticket closed.', 'info');
+        this.switchAdminTab('tickets');
+    },
+
+    // ==================== USER TICKET ACTIONS ====================
+    userReplyTicket(ticketId) {
+        var body = document.getElementById('user-reply-' + ticketId);
+        if (!body || !body.value.trim()) { Components.toast('Please write a reply.', 'error'); return; }
+        var user = Store.currentUser();
+        Store.replyToTicket(ticketId, { userId: user.id, body: body.value.trim() });
+        Store.updateTicketStatus(ticketId, 'open');
+        var admins = Store.getUsers().filter(function (u) { return u.role === 'admin'; });
+        var ticket = Store.getTicket(ticketId);
+        admins.forEach(function (a) {
+            Store.addNotification(a.id, 'User replied to ticket: "' + (ticket ? ticket.subject : '') + '"', 'ticket', ticketId);
+        });
+        Components.toast('Reply sent!', 'success');
+        this.route();
+    },
+
+    userCloseTicket(ticketId) {
+        Store.updateTicketStatus(ticketId, 'closed');
+        var ticket = Store.getTicket(ticketId);
+        var admins = Store.getUsers().filter(function (u) { return u.role === 'admin'; });
+        admins.forEach(function (a) {
+            Store.addNotification(a.id, 'User closed ticket: "' + (ticket ? ticket.subject : '') + '"', 'ticket', ticketId);
+        });
+        Components.toast('Ticket closed.', 'info');
+        this.route();
     }
 };
 
-document.addEventListener('DOMContentLoaded', function () { App.init(); });
+document.addEventListener('DOMContentLoaded', function () {
+    Store.loadFromServer().then(function (loaded) {
+        if (!loaded) {
+            Store.seed();
+            Store._pushAllToServer();
+        }
+        App.init();
+    });
+});

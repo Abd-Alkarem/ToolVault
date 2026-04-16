@@ -186,6 +186,8 @@ const Pages = {
         }
         items.push({ icon: 'calendar', label: 'Bookings', href: '#/bookings', id: 'bookings', badge: pendingCount });
         items.push({ icon: 'bell', label: 'Notifications', href: '#/notifications', id: 'notifications', badge: unreadNotifs });
+        var ticketCount = user ? Store.getUserTickets(user.id).filter(function(t) { return t.status === 'replied'; }).length : 0;
+        items.push({ icon: 'mail', label: 'My Tickets', href: '#/my-tickets', id: 'my-tickets', badge: ticketCount });
         items.push({ icon: 'user', label: 'Profile', href: '#/profile', id: 'profile' });
         if (Store.isAdmin()) items.push({ icon: 'shield', label: 'Admin Panel', href: '#/admin', id: 'admin' });
 

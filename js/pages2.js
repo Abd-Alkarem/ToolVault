@@ -233,6 +233,7 @@ Pages.admin = function () {
     var tools = Store.getAllTools();
     var bookings = Store.getBookings();
     var posts = Store.getAllForumPosts();
+    var tickets = Store.getTickets();
 
     return '<div class="dashboard-layout">' + Pages._dashboardSidebar('admin') +
         '<div class="dashboard-content">' +
@@ -252,7 +253,8 @@ Pages.admin = function () {
         '<button class="tab active" onclick="App.switchAdminTab(\'users\')">' + Components.icon('users', 14) + ' Users (' + users.length + ')</button>' +
         '<button class="tab" onclick="App.switchAdminTab(\'tools\')">' + Components.icon('wrench', 14) + ' Tools (' + tools.length + ')</button>' +
         '<button class="tab" onclick="App.switchAdminTab(\'forum\')">' + Components.icon('message-circle', 14) + ' Forum (' + posts.length + ')</button>' +
-        '<button class="tab" onclick="App.switchAdminTab(\'bookings\')">' + Components.icon('calendar', 14) + ' Bookings (' + bookings.length + ')</button></div>' +
+        '<button class="tab" onclick="App.switchAdminTab(\'bookings\')">' + Components.icon('calendar', 14) + ' Bookings (' + bookings.length + ')</button>' +
+        '<button class="tab" onclick="App.switchAdminTab(\'tickets\')">' + Components.icon('mail', 14) + ' Tickets (' + tickets.length + ')</button></div>' +
         '<div id="admin-tab-content" class="animate-in animate-in-delay-3">' + Pages._adminUsersTab(users) + '</div></div></div>';
 };
 
@@ -311,13 +313,14 @@ Pages._adminForumTab = function (posts) {
         if (p.replies && p.replies.length > 0) {
             var replyItems = p.replies.map(function (r) {
                 var ra = Store.getUser(r.authorId);
-                return '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:0.8rem"><span style="color:var(--text-secondary)">' + (ra ? ra.name : 'Unknown') + ':</span><span style="color:var(--text-muted);flex:1">' + r.body.substring(0, 80) + (r.body.length > 80 ? '...' : '') + '</span><button class="btn btn-sm btn-ghost" style="font-size:0.7rem;padding:2px 6px;color:var(--accent-red)" onclick="App.adminDeleteReply(\'' + p.id + '\',\'' + r.id + '\')">' + Components.icon('x', 10) + '</button></div>';
+                var rText = r.body || r.text || '';
+                return '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:0.8rem"><span style="color:var(--text-secondary)">' + (ra ? ra.name : 'Unknown') + ':</span><span style="color:var(--text-muted);flex:1">' + rText.substring(0, 80) + (rText.length > 80 ? '...' : '') + '</span><button class="btn btn-sm btn-ghost" style="font-size:0.7rem;padding:2px 6px;color:var(--accent-red)" onclick="App.adminDeleteReply(\'' + p.id + '\',\'' + r.id + '\')">' + Components.icon('x', 10) + '</button></div>';
             }).join('');
             repliesHtml = '<div style="margin-top:var(--space-sm);padding-top:var(--space-sm);border-top:1px solid var(--border-color)"><span style="font-size:0.8rem;color:var(--text-muted)">' + p.replies.length + ' replies</span>' + replyItems + '</div>';
         }
         return '<div class="card"><div class="card-body">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-sm)">' +
-            '<div style="display:flex;align-items:center;gap:var(--space-sm)">' + Components.avatar(author) + '<div><div style="font-weight:600;font-size:0.9rem">' + (author ? author.name : 'Unknown') + '</div><div style="font-size:0.75rem;color:var(--text-muted)">' + date + ' · ' + p.category + '</div></div></div>' +
+            '<div style="display:flex;align-items:center;gap:var(--space-sm)">' + Components.avatar(author) + '<div><div style="font-weight:600;font-size:0.9rem">' + (author ? author.name : 'Unknown') + '</div><div style="font-size:0.75rem;color:var(--text-muted)">' + date + ' · ' + (p.category || 'General') + '</div></div></div>' +
             '<div style="display:flex;gap:6px"><button class="btn btn-sm btn-secondary" onclick="App.adminEditPost(\'' + p.id + '\')">' + Components.icon('edit', 12) + '</button><button class="btn btn-sm btn-danger" onclick="App.adminDeletePost(\'' + p.id + '\')">' + Components.icon('trash-2', 12) + '</button></div></div>' +
             '<h4 style="margin-bottom:4px">' + p.title + '</h4>' +
             '<p style="color:var(--text-secondary);font-size:0.85rem">' + p.body.substring(0, 150) + (p.body.length > 150 ? '...' : '') + '</p>' +
@@ -368,7 +371,7 @@ Pages._forumPostCard = function (post) {
     var date = new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     return '<div class="card" style="margin-bottom:var(--space-md);cursor:pointer" onclick="App.showForumPost(\'' + post.id + '\')">' +
         '<div class="card-body">' +
-        '<div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-sm)"><span class="badge badge-pending">' + post.category + '</span><span style="color:var(--text-muted);font-size:0.8rem">' + date + '</span></div>' +
+        '<div style="display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-sm)"><span class="badge badge-pending">' + (post.category || 'General') + '</span><span style="color:var(--text-muted);font-size:0.8rem">' + date + '</span></div>' +
         '<h3 style="font-size:1.05rem;margin-bottom:var(--space-sm)">' + post.title + '</h3>' +
         '<p style="color:var(--text-secondary);font-size:0.9rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + post.body + '</p>' +
         '<div style="display:flex;align-items:center;gap:var(--space-md);margin-top:var(--space-md)"><div style="display:flex;align-items:center;gap:6px">' + Components.avatar(author) + ' <span style="font-size:0.85rem">' + (author ? author.name : 'Unknown') + '</span></div><span style="color:var(--text-muted);font-size:0.85rem;margin-left:auto">' + Components.icon('message-circle', 14) + ' ' + post.replies.length + ' replies</span></div>' +

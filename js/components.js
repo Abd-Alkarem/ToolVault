@@ -53,11 +53,17 @@ const Components = {
     // ---- Avatar ----
     avatar(user, size) {
         size = size || '';
-        if (!user) return '<div class="avatar ' + size + ' avatar-placeholder">?</div>';
+        if (!user) return '<div class="avatar ' + size + ' avatar-placeholder" style="background:var(--bg-tertiary);color:var(--text-muted)">?</div>';
         var initials = user.name.split(' ').map(function (n) { return n[0]; }).join('').toUpperCase();
         var badge = Store.getHostBadge(user.id);
         var title = user.name + (badge ? ' · ' + badge.label : '');
-        return '<div class="avatar ' + size + ' avatar-placeholder" title="' + title + '">' + initials + '</div>';
+        if (user.avatar && user.avatar.length > 10) {
+            return '<img class="avatar ' + size + '" src="' + user.avatar + '" alt="' + title + '" title="' + title + '" style="object-fit:cover;border-radius:50%">';
+        }
+        var colors = ['var(--accent-cyan)', 'var(--accent-purple)', 'var(--accent-green)', 'var(--accent-orange)', 'var(--accent-pink)'];
+        var colorIdx = user.name.length % colors.length;
+        var bgColor = colors[colorIdx];
+        return '<div class="avatar ' + size + ' avatar-placeholder" title="' + title + '" style="background:' + bgColor + '20;color:' + bgColor + ';border:1px solid ' + bgColor + '40">' + initials + '</div>';
     },
 
     // ---- Host Badge ----
@@ -246,8 +252,8 @@ const Components = {
         return '<footer class="footer"><div class="footer-grid">' +
             '<div class="footer-brand"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="logo-text">Tool<span class="logo-accent">Vault</span></span></div><p>Community-powered tool sharing. Save money, reduce waste, and build trust with your neighbors.</p></div>' +
             '<div class="footer-section"><h4>Platform</h4><a href="#/browse">' + Components.icon('search', 14) + ' Browse Tools</a><a href="#/register">' + Components.icon('user-plus', 14) + ' Become a Host</a><a href="#/register">' + Components.icon('key', 14) + ' Sign Up to Rent</a><a href="#/forum">' + Components.icon('message-circle', 14) + ' Community Forum</a></div>' +
-            '<div class="footer-section"><h4>Support</h4><a href="#/about">' + Components.icon('info', 14) + ' About ToolVault</a><a href="#">' + Components.icon('shield', 14) + ' Safety Guidelines</a><a href="#">' + Components.icon('help-circle', 14) + ' Help Center</a><a href="#">' + Components.icon('mail', 14) + ' Contact Us</a></div>' +
-            '<div class="footer-section"><h4>Legal</h4><a href="#">' + Components.icon('file-text', 14) + ' Terms of Service</a><a href="#">' + Components.icon('lock', 14) + ' Privacy Policy</a><a href="#">' + Components.icon('cookie', 14) + ' Cookie Policy</a><a href="#">' + Components.icon('shield-check', 14) + ' Insurance Info</a></div>' +
+            '<div class="footer-section"><h4>Support</h4><a href="#/about">' + Components.icon('info', 14) + ' About ToolVault</a><a href="#/safety">' + Components.icon('shield', 14) + ' Safety Guidelines</a><a href="#/help">' + Components.icon('help-circle', 14) + ' Help Center</a><a href="#/contact">' + Components.icon('mail', 14) + ' Contact Us</a></div>' +
+            '<div class="footer-section"><h4>Legal</h4><a href="#/terms">' + Components.icon('file-text', 14) + ' Terms of Service</a><a href="#/privacy">' + Components.icon('lock', 14) + ' Privacy Policy</a><a href="#/cookies">' + Components.icon('cookie', 14) + ' Cookie Policy</a><a href="#/insurance">' + Components.icon('shield-check', 14) + ' Insurance Info</a></div>' +
             '</div><div class="footer-bottom">© 2026 ToolVault. All rights reserved. Built with ♥ for the community. | <a href="#/about">About</a> | ' + Components.icon('lock', 12) + ' HTTPS Secured</div></footer>';
     },
 
